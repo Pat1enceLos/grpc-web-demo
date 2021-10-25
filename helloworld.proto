@@ -1,0 +1,115 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option java_package = "com.xd.oa.grpc";
+
+// Health check
+service Health {
+  // Sends a greeting
+  rpc SayHello (HealthRequest) returns (HealthReply) {}
+
+}
+
+// The request message containing the user's name.
+message HealthRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HealthReply {
+  string message = 1;
+}
+
+
+service User {
+  rpc getUserInfo(GetUserInfoRequest) returns (GetUserInfoReply) {}
+
+  rpc bindUser(BindUserRequest) returns (google.protobuf.Empty) {}
+
+  rpc searchUser(SearchRequest) returns (SearchUserInfoReplay) {}
+
+  rpc getLeaveUserList(google.protobuf.Empty) returns (GetUserInfoReply) {}
+
+  rpc getTmpUserInfoByEmail(GetTmpUserInfoByEmailRequest) returns (GetTmpUserInfoByEmailReply) {}
+
+  rpc getCorpUserInfo(GetCorpUserInfoRequest) returns(GetUserInfoReply) {}
+
+  rpc getHiredUserList(google.protobuf.Empty) returns(GetHiredUserInfoReply) {}
+
+  rpc searchUserWithDepartment(SearchRequest) returns (SearchUserInfoReplay) {}
+
+  rpc getWxUserInfoByEmail(GetWxUserInfoByEmailRequest) returns (GetWxUserInfoByEmailReply) {}
+}
+
+message GetUserInfoRequest {
+  repeated string subs = 1;
+  repeated string emails = 2;
+  repeated int64 userIds = 3;
+}
+
+message UserInfo {
+  string sub = 1;
+  int64 userid = 2;
+  string corpUserId = 3;
+  string name = 4;
+  string email = 5;
+  string avatar = 6;
+  string department = 7;
+  int32 status = 8;
+  int64 ehrUserId = 9;
+}
+message GetUserInfoReply {
+  repeated UserInfo users = 1;
+}
+
+message BindUserRequest {
+  string token = 1;
+}
+
+message SearchRequest {
+  string keyword = 1;
+}
+
+message SearchUserInfoReplay {
+  repeated UserInfo users = 1;
+}
+
+message GetTmpUserInfoByEmailRequest {
+  string email = 1;
+  string sub = 2;
+}
+
+message GetTmpUserInfoByEmailReply {
+  UserInfo user = 1;
+}
+message GetCorpUserInfoRequest {
+  repeated string corpUserIds = 1;
+}
+
+message HiredUserInfo {
+  int64 id = 1;
+  int64 ehrUserId = 2;
+  string name = 3;
+  string email = 4;
+  string departmentId = 5;
+  string departmentName = 6;
+  int64 entryDate = 7;
+  string organizationId = 8;
+  string mainDepartmentName = 9;
+}
+
+message GetHiredUserInfoReply {
+  repeated HiredUserInfo users = 1;
+}
+
+message GetWxUserInfoByEmailRequest {
+  repeated string emails = 1;
+}
+
+message GetWxUserInfoByEmailReply {
+  repeated WxUserInfo users = 1;
+}
+
+message WxUserInfo {
+  string email = 1;
+  string corpUserId = 2;
+}

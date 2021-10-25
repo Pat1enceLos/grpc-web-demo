@@ -1,0 +1,54 @@
+
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address: { address: 0.0.0.0, port_value: 9901 } # 管理员界面地址
+static_resources: # 静态API
+  listeners: # 监听器
+  - name: listener_0 # listener的UUID，唯一限定名
+    address: # 监听的逻辑
+      socket_address: { address: 0.0.0.0, port_value: 8080 } # 监听本地8080端口
+    filter_chains: # 过滤器链，envoy会根据配置顺序执行Filter
+    - filters: # 过滤器
+      - name: envoy.filters.network.http_connection_manager # 内置过滤器
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          codec_type: auto
+          stat_prefix: ingress_http
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: local_service # 必填，virtual_hosts的名字，通常是FQDN加端口
+              domains: ["*"] # 必填 用来匹配virtualHost的域名列表  -> *匹配所有路由
+              routes: # 针对入口流量的有序路由列表，第一个匹配上的路由将被执行
+              - match: { prefix: "/" } # 匹配根路由
+                route:
+                  cluster: greeter_service # 将要处理请求的集群名称，和下面cluster的name相对应
+                  max_stream_duration:
+                    grpc_timeout_header_max: 0s
+              cors: # 跨域配置
+                allow_origin_string_match:
+                - prefix: "*"
+                allow_methods: GET, PUT, DELETE, POST, OPTIONS
+                allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,Authorization # 配置跨域允许的请求头
+                max_age: "1728000"
+                expose_headers: custom-header-1,grpc-status,grpc-message
+          http_filters: # 该过滤器允许Envoy在处理请求时取适应和修改请求
+          - name: envoy.filters.http.grpc_web
+          - name: envoy.filters.http.cors
+          - name: envoy.filters.http.router
+  clusters:
+  - name: greeter_service # 与上面cluster相对应
+    connect_timeout: 0.25s
+    type: logical_dns # 服务发现类型 static、strict_dns、logical_dns、eds、original_dst
+    http2_protocol_options: {}
+    lb_policy: round_robin # 轮询主机
+    load_assignment:
+      cluster_name: cluster_0
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 172.26.61.187
+                    port_value: 9898
